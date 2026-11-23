@@ -213,6 +213,26 @@ footer{max-width:1560px;margin:0 auto;padding:0 20px 30px;color:var(--muted);fon
 .two>*,.grid2>*{min-width:0}
 .ex td{max-width:360px;overflow:hidden;text-overflow:ellipsis}
 .blocks{grid-template-columns:repeat(auto-fill,minmax(460px,1fr))}
+.kpi[data-k]{cursor:pointer;position:relative;transition:background .15s}
+.kpi[data-k]:hover,.kpi[data-k]:focus-visible{background:#f6f8fd;outline:none}
+.kpi-mais{display:block;margin-top:6px;font-size:11.5px;font-weight:600;color:var(--c,var(--navy));opacity:.75}
+.kpi[data-k]:hover .kpi-mais{opacity:1;text-decoration:underline}
+.mdl-fundo{position:fixed;inset:0;z-index:60;background:rgba(20,29,51,.55);display:flex;align-items:flex-start;justify-content:center;padding:4vh 16px;overflow:auto}
+.mdl{background:#fff;border-radius:14px;width:min(1100px,100%);box-shadow:0 20px 60px rgba(0,0,0,.35);border-top:5px solid var(--orange)}
+.mdl-h{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:14px 18px 10px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff;border-radius:14px 14px 0 0;z-index:1}
+.mdl-h h2{font-size:24px}.mdl-acoes{display:flex;gap:8px;align-items:center}
+.mdl-x{border:0;background:var(--panel2);width:34px;height:34px;border-radius:50%;font-size:22px;line-height:1;cursor:pointer;color:var(--muted)}
+.mdl-x:hover{background:var(--line);color:var(--fg)}
+.mdl-b{padding:14px 18px 20px;max-height:78vh;overflow:auto}
+.mlink{color:var(--accent);cursor:pointer;font-weight:600;text-decoration:none}.mlink:hover{text-decoration:underline}
+.mini-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.mini-kpis>div{border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13px}.mini-kpis b{font-family:var(--f-d);font-size:24px}
+.env{display:grid;grid-template-columns:92px minmax(0,1fr);gap:10px;padding:7px 0 7px 10px;border-left:4px solid var(--c);margin-bottom:6px;background:var(--panel2);border-radius:0 8px 8px 0;font-size:13.5px}
+.env .h{font-family:var(--f-m);font-size:12px;color:var(--muted)}
+.barras{display:grid;gap:6px}
+.barra{display:grid;grid-template-columns:92px minmax(120px,1fr) 90px;gap:4px 10px;align-items:center;font-size:13px}
+.barra .h{font-family:var(--f-m);font-size:12px;color:var(--muted)}.barra small{grid-column:2/4;color:var(--muted)}
+@media (max-width:640px){.mini-kpis{grid-template-columns:repeat(2,1fr)}}
 
 </style>
 </head>
@@ -723,13 +743,14 @@ function kpis(){
   const ch=scUltimas(tab("MET","Chuva").filter(r=>r["Chuva 1h (mm)"]!==""),r=>r["Estação"]).filter(r=>(NOW-r._t)/MIN<=60);
   const cmax=ch.sort((a,b)=>b["Chuva 1h (mm)"]-a["Chuva 1h (mm)"])[0];
   const K=[];
-  K.push(`<div class="kpi" style="--c:var(--g3)"><div class="l">Municípios por grau ICR</div><div class="gcount">${[3,2,1].map((g,i)=>`<span><i style="background:var(--g${g});${g===1?"color:#2e1600":""}">G${g}</i>${n[i]}</span>`).join("")}</div><div class="s">${nd?`${nd} por decreto de SE/ECP · `:""}${abaixo} abaixo do grau 1</div><div class="u">${ILUS?"inclui chuva e rios ilustrativos":"só dados reais do evento"}</div></div>`);
-  K.push(`<div class="kpi" style="--c:var(--pi)"><div class="l">Ocorrências SisGeO</div><div class="v">${sg.length} <small>em ${sgM.size} municípios</small></div><div class="s">${vit} vítimas · ${ob} óbito${ob===1?"":"s"} (relatos)</div><div class="u">${sg.length?"última "+dhm(Math.max(...sg.map(r=>r._t))):"—"} · válidas na depuração NI²AD</div></div>`);
-  K.push(`<div class="kpi" style="--c:var(--reg)"><div class="l">Danos humanos (REDECs)</div><div class="v">${dbr} <small>desabrigados</small></div><div class="s">${dlj} desalojados · ${ob} óbito${ob===1?"":"s"}</div><div class="u">maior número informado por município</div></div>`);
-  K.push(`<div class="kpi" style="--c:var(--al)"><div class="l">Cell Broadcast</div><div class="v">${cbM.size} <small>municípios</small></div><div class="s">${toq} toques de aviso · ${sir} sirene acionada</div><div class="u">${al.length?"último alerta "+dhm(Math.max(...al.map(r=>r._t))):"—"}</div></div>`);
-  K.push(`<div class="kpi" style="--c:var(--en)"><div class="l">Sem energia</div>${tEn?`<div class="v">${fint(ucs)} <small>UCs</small></div><div class="s">pico ${fint(picoEn[0])} UCs (${dhm(picoEn[1])})</div><div class="u">extração ${dhm(tEn)}</div>`:`<div class="v">—</div><div class="s">sem extração</div>`}</div>`);
-  K.push(`<div class="kpi" style="--c:var(--met)"><div class="l">Vento e chuva</div><div class="v">${vmax?f1(vmax["Rajada máx (km/h)"]):"—"} <small>km/h</small></div><div class="s">${vmax?esc(vmax["Município"])+" · "+hm(vmax._t):"sem leitura"}</div><div class="u">${cmax&&+cmax["Chuva 1h (mm)"]>=1?`chuva 1h agora: ${f1(cmax["Chuva 1h (mm)"])} mm em ${esc(cmax["Município"])}${ehIlu(cmax)?' <span class="ilu">ilustr.</span>':""}`:"sem chuva relevante na última hora"}</div></div>`);
+  K.push(`<div class="kpi" data-k="grau" tabindex="0" role="button" title="Clique para ver a relação completa" style="--c:var(--g3)"><div class="l">Municípios por grau ICR</div><div class="gcount">${[3,2,1].map((g,i)=>`<span><i style="background:var(--g${g});${g===1?"color:#2e1600":""}">G${g}</i>${n[i]}</span>`).join("")}</div><div class="s">${nd?`${nd} por decreto de SE/ECP · `:""}${abaixo} abaixo do grau 1</div><div class="u">${ILUS?"inclui chuva e rios ilustrativos":"só dados reais do evento"}</div></div>`);
+  K.push(`<div class="kpi" data-k="sisgeo" tabindex="0" role="button" title="Clique para ver a relação completa" style="--c:var(--pi)"><div class="l">Ocorrências SisGeO</div><div class="v">${sg.length} <small>em ${sgM.size} municípios</small></div><div class="s">${vit} vítimas · ${ob} óbito${ob===1?"":"s"} (relatos)</div><div class="u">${sg.length?"última "+dhm(Math.max(...sg.map(r=>r._t))):"—"} · válidas na depuração NI²AD</div></div>`);
+  K.push(`<div class="kpi" data-k="danos" tabindex="0" role="button" title="Clique para ver a relação completa" style="--c:var(--reg)"><div class="l">Danos humanos (REDECs)</div><div class="v">${dbr} <small>desabrigados</small></div><div class="s">${dlj} desalojados · ${ob} óbito${ob===1?"":"s"}</div><div class="u">maior número informado por município</div></div>`);
+  K.push(`<div class="kpi" data-k="alertas" tabindex="0" role="button" title="Clique para ver a relação completa" style="--c:var(--al)"><div class="l">Cell Broadcast</div><div class="v">${cbM.size} <small>municípios</small></div><div class="s">${toq} toques de aviso · ${sir} sirene acionada</div><div class="u">${al.length?"último alerta "+dhm(Math.max(...al.map(r=>r._t))):"—"}</div></div>`);
+  K.push(`<div class="kpi" data-k="energia" tabindex="0" role="button" title="Clique para ver a relação completa" style="--c:var(--en)"><div class="l">Sem energia</div>${tEn?`<div class="v">${fint(ucs)} <small>UCs</small></div><div class="s">pico ${fint(picoEn[0])} UCs (${dhm(picoEn[1])})</div><div class="u">extração ${dhm(tEn)}</div>`:`<div class="v">—</div><div class="s">sem extração</div>`}</div>`);
+  K.push(`<div class="kpi" data-k="vento" tabindex="0" role="button" title="Clique para ver a relação completa" style="--c:var(--met)"><div class="l">Vento e chuva</div><div class="v">${vmax?f1(vmax["Rajada máx (km/h)"]):"—"} <small>km/h</small></div><div class="s">${vmax?esc(vmax["Município"])+" · "+hm(vmax._t):"sem leitura"}</div><div class="u">${cmax&&+cmax["Chuva 1h (mm)"]>=1?`chuva 1h agora: ${f1(cmax["Chuva 1h (mm)"])} mm em ${esc(cmax["Município"])}${ehIlu(cmax)?' <span class="ilu">ilustr.</span>':""}`:"sem chuva relevante na última hora"}</div></div>`);
   $("kpis").innerHTML=K.join("");
+  $("kpis").querySelectorAll(".kpi").forEach(el=>el.insertAdjacentHTML("beforeend",'<span class="kpi-mais">ver relação ›</span>'));
   $("fontes").innerHTML=FONTES_ST.map(([f,a,l,c,il])=>{const rows=tab(f,a),fr=frescor(f,a,rows);
     return `<div class="fs ${fr.st}" style="--c:${c}" title="${fr.st==="vel"?"Desatualizada: passou da validade de "+fr.v+" min":fr.st==="nd"?"Nenhuma linha registrada até este momento":"Em dia"}"><span class="d"></span><span><b>${l}</b>${il?' <span class="ilu">ilustr.</span>':""}<br><small>${fr.st==="nd"?"sem informação":dhm(fr.t)+(fr.v?" · "+(fr.st==="vel"?"desatualizada":"em dia"):"")}</small></span></div>`}).join("");
 }
@@ -1004,6 +1025,94 @@ function renderInt(){
     const txt="﻿"+[cols.map(q).join(",")].concat(linhas.map(l=>cols.map(c=>q(l[c])).join(","))).join("\r\n");
     const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([txt],{type:"text/csv"}));a.download="registros_sala_de_crise_"+scFmt(NOW).replace(/[\/: ]/g,"")+".csv";a.click()};
 }
+
+/* ---------------- KPIs ativos: janela com a relação completa ---------------- */
+document.body.insertAdjacentHTML("beforeend",`<div class="mdl-fundo" id="mdl" hidden><div class="mdl" role="dialog" aria-modal="true" aria-labelledby="mdlT">
+  <div class="mdl-h"><div><div class="lbl" id="mdlS"></div><h2 id="mdlT"></h2></div><div class="mdl-acoes"><button class="btn sec" id="mdlCsv">Baixar CSV</button><button class="mdl-x" id="mdlX" aria-label="Fechar">×</button></div></div>
+  <div class="mdl-b" id="mdlB"></div></div></div>`);
+let MDL_CSV=null;
+function abrirModal(titulo,corpo,csv){$("mdlT").textContent=titulo;$("mdlS").textContent="Situação em "+scFmt(NOW)+(ILUS?" · com ilustrativos":"");$("mdlB").innerHTML=corpo;
+  MDL_CSV=csv||null;$("mdlCsv").hidden=!csv;$("mdl").hidden=false;$("mdlX").focus()}
+function fecharModal(){$("mdl").hidden=true}
+$("mdlX").onclick=fecharModal;$("mdl").onclick=e=>{if(e.target.id==="mdl")fecharModal()};
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("mdl").hidden)fecharModal()});
+$("mdlCsv").onclick=()=>{if(!MDL_CSV)return;const q=v=>`"${String(v??"").replace(/"/g,'""')}"`;
+  const txt="﻿"+MDL_CSV.rows.map(l=>l.map(q).join(";")).join("\r\n");const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([txt],{type:"text/csv"}));a.download=MDL_CSV.nome+"_"+scFmt(NOW).replace(/[\/: ]/g,"")+".csv";a.click()};
+$("mdlB").addEventListener("click",e=>{const m=e.target.closest("[data-mun]");if(!m)return;fecharModal();SEL=m.dataset.mun;TAB="mun";
+  document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("on",x.dataset.t==="mun"));render();scrollTo({top:0,behavior:"smooth"})});
+const munLink=m=>scEhMun(m)?`<a class="mlink" data-mun="${esc(m)}">${esc(m)}</a>`:esc(m);
+const tabela=(cab,linhas,dir=[])=>`<table class="tb"><tr>${cab.map((c,i)=>`<th${dir.includes(i)?' class="r"':""}>${c}</th>`).join("")}</tr>${linhas.map(l=>`<tr>${l.map((v,i)=>`<td${dir.includes(i)?' class="r mono"':""}>${v}</td>`).join("")}</tr>`).join("")}</table>`;
+
+const KPI_DET={
+  grau(){
+    const linhas=G.map(o=>[`<span class="gp g${o.g}">${o.g?"Grau "+o.g:"< G1"}${o.decreto?" ⚖️":""}</span>`,munLink(o.mun),esc(SHORT(SC_REDEC_DE[o.mun])),String(o.n1),String(o.n2),String(o.n3),String(o.idx),stripHTML(o)]);
+    const csv=[["Grau","Município","REDEC","Critérios ≥1","Critérios ≥2","Critérios 3","Índice","Decreto"]].concat(G.map(o=>[o.g?"Grau "+o.g:"Abaixo do grau 1",o.mun,SHORT(SC_REDEC_DE[o.mun]),o.n1,o.n2,o.n3,o.idx,o.decreto?o.decreto.decreto:""]));
+    abrirModal("Municípios por grau da Matriz ICR",`<div class="note" style="margin-bottom:8px">Grau = pelo menos ${SC_MINCRIT} critérios no nível. ⚖️ = Grau 3 por decreto de SE/ECP. Faixa: C1 a C10. Clique no município para abrir a ficha.</div>`+
+      tabela(["Grau","Município","REDEC","≥ 1","≥ 2","= 3","Índice","C1 … C10"],linhas,[3,4,5,6]),{nome:"municipios_grau_icr",rows:csv});
+  },
+  sisgeo(){
+    const todas=tab("PI","SisGeO").sort((a,b)=>b._t-a._t),val=todas.filter(r=>!String(r["Depuração"]||"").trim());
+    const porMun={};val.forEach(r=>{const o=porMun[r["Município"]]=porMun[r["Município"]]||{n:0,v:0,tipos:{}};o.n++;o.v+=+r["Vítimas"]||0;o.tipos[r["Tipo"]]=(o.tipos[r["Tipo"]]||0)+1});
+    const resumo=tabela(["Município","Ocorrências","Vítimas","Por tipo"],Object.entries(porMun).sort((a,b)=>b[1].n-a[1].n).map(([m,o])=>[munLink(m),String(o.n),o.v?String(o.v):"—",esc(Object.entries(o.tipos).map(([t,n])=>`${t}: ${n}`).join(" · "))]),[1,2]);
+    const lista=tabela(["Data/hora","Município","Tipo","Subtipo","Vítimas","Ocorrência","Conta?"],todas.map(r=>[dhm(r._t),munLink(r["Município"]),esc(r["Tipo"]),esc(r["Subtipo"]),r["Vítimas"]?String(r["Vítimas"]):"—",`<span class="mono">${esc(r["Ocorrência"])}</span>`,
+      String(r["Depuração"]||"").trim()?`<span class="chip">fora (${esc(r["Depuração"])})</span>`:'<span class="chip ok">válida</span>']),[4]);
+    abrirModal(`Ocorrências SisGeO · ${val.length} válidas de ${todas.length}`,`<div class="lbl">Por município</div>${resumo}<div class="lbl" style="margin-top:14px">Todas as ocorrências (mais recente primeiro)</div>${lista}<div class="note">Fonte: Painel Integrado NI²AD (SisGeO · 193/CBMERJ). "Fora" = retirada pela depuração do NI²AD (clima, situação ou subtipo sem relação com chuva).</div>`,
+      {nome:"sisgeo",rows:[["Data/hora","Município","Tipo","Subtipo","Situação","Vítimas","Ocorrência","Depuração"]].concat(todas.map(r=>[scFmt(r._t),r["Município"],r["Tipo"],r["Subtipo"],r["Situação"],r["Vítimas"],r["Ocorrência"],r["Depuração"]]))});
+  },
+  danos(){
+    const C=["Desabrigados","Desalojados","Óbitos","Feridos"],o={};
+    tab("PI","Eventos REDECs").forEach(r=>C.forEach(c=>{const v=+r[c]||0;if(!v)return;const x=o[r["Município"]]=o[r["Município"]]||{};if(!x[c]||v>x[c].v)x[c]={v,t:r._t}}));
+    tab("REG","Registros").forEach(r=>{const c=C.find(c=>c===r["Tipo de ocorrência"]);if(!c)return;const v=+r["Quantidade"]||0;const x=o[r["Município"]]=o[r["Município"]]||{};if(!x[c]||v>x[c].v)x[c]={v,t:r._t,reg:1}});
+    const pa=tab("PI","Pontos de apoio");
+    const linhas=Object.entries(o).sort((a,b)=>(b[1]["Óbitos"]?.v||0)-(a[1]["Óbitos"]?.v||0)||(b[1].Desabrigados?.v||0)-(a[1].Desabrigados?.v||0)).map(([m,x])=>[munLink(m)].concat(C.map(c=>x[c]?`${x[c].v}<br><small style="color:var(--muted)">${dhm(x[c].t)}</small>`:"—")));
+    const tot=C.map(c=>Object.values(o).reduce((s,x)=>s+(x[c]?.v||0),0));
+    abrirModal("Danos humanos informados",tabela(["Município"].concat(C),linhas.concat([["<b>Total</b>"].concat(tot.map(v=>`<b>${v}</b>`))]),[1,2,3,4])+
+      (pa.length?`<div class="lbl" style="margin-top:14px">Pontos de apoio</div>${tabela(["Data/hora","Município","Pontos"],pa.map(r=>[dhm(r._t),munLink(r["Município"]),esc(r["Ponto"])]))}`:"")+
+      `<div class="note">Maior número informado por município nos relatos das REDECs (Painel Integrado NI²AD) e no formulário (aba Registros). Os números não se somam entre relatos: vale o último consolidado de cada município.</div>`,
+      {nome:"danos_humanos",rows:[["Município"].concat(C)].concat(Object.entries(o).map(([m,x])=>[m].concat(C.map(c=>x[c]?x[c].v:""))))});
+  },
+  alertas(){
+    const al=tab("PI","Alertas").sort((a,b)=>a._t-b._t);
+    const grupos={};al.forEach(r=>{const k=r._t+"|"+r["Tipo"]+"|"+r["Categoria"];(grupos[k]=grupos[k]||{t:r._t,tp:r["Tipo"],cat:r["Categoria"],sev:r["Severidade"],m:[],q:0,msg:r["Mensagem"]}).m.push(r["Município"]);grupos[k].q+=+r["Quantidade"]||0});
+    const ord=Object.values(grupos).sort((a,b)=>a.t-b.t),cor=t=>/Cell/.test(t)?"#ab47bc":/IDAP/.test(t)?"#5c6bc0":"#00838f";
+    const cb=al.filter(r=>/Cell/.test(r["Tipo"])),toq=al.filter(r=>/Toque/.test(r["Tipo"])),sir=al.filter(r=>r["Tipo"]==="Sirene acionada"),idap=al.filter(r=>/IDAP/.test(r["Tipo"]));
+    const cab=`<div class="mini-kpis"><div><b>${cb.length}</b> Cell Broadcast<br><small>${new Set(cb.map(r=>r["Município"])).size} municípios</small></div><div><b>${toq.reduce((s,r)=>s+(+r["Quantidade"]||0),0)}</b> toques de aviso<br><small>${toq.length} municípios</small></div><div><b>${sir.reduce((s,r)=>s+(+r["Quantidade"]||0),0)}</b> sirene acionada<br><small>${sir.map(r=>r["Município"]).join(", ")||"—"}</small></div><div><b>${idap.length}</b> IDAP<br><small>avisos regionais</small></div></div>`;
+    const lista=ord.map(g=>`<div class="env" style="--c:${cor(g.tp)}"><span class="h">${dhm(g.t)}</span><div><b>${esc(g.tp.replace(" (Defesa Civil Alerta)",""))}</b>${g.sev&&g.sev!=="Não se aplica"?" · "+esc(g.sev):""}${g.cat?" · "+esc(g.cat):""}${/Toque|Sirene/.test(g.tp)&&g.q?` · ${g.q} ${/Toque/.test(g.tp)?"estações":"sirene(s)"}`:""}<br>${g.m.map(munLink).join(", ")}${g.msg&&/IDAP|Prefeitura|pedido/.test(g.msg+g.tp)?`<br><small style="color:var(--muted)">${esc(g.msg)}</small>`:""}</div></div>`).join("");
+    abrirModal("Alertas e alarmes enviados",cab+`<div class="lbl" style="margin:12px 0 6px">Relação dos envios (ordem cronológica)</div>${lista||'<div class="empty">Nenhum envio até este momento.</div>'}<div class="note">Fonte: Painel Integrado NI²AD (aba ALERTAS-MENSAGENS, mensagens do grupo de WhatsApp) e CEMADEN-RJ.</div>`,
+      {nome:"alertas",rows:[["Data/hora","Tipo","Município","Severidade","Categoria","Quantidade","Mensagem"]].concat(al.map(r=>[scFmt(r._t),r["Tipo"],r["Município"],r["Severidade"],r["Categoria"],r["Quantidade"],r["Mensagem"]]))});
+  },
+  energia(){
+    const en=tab("CGREE","Interrupções"),est=en.filter(r=>r["Município"]==="Estado (todos)"),ex={};
+    est.forEach(r=>{const x=ex[r._t]=ex[r._t]||{t:r._t,tot:0,d:[],f:r["Fonte da informação"]};x.tot+=+r["UCs sem energia"]||0;x.d.push(`${r["Distribuidora"]}: ${fint(r["UCs sem energia"])}`)});
+    const serie=Object.values(ex).sort((a,b)=>a.t-b.t),mx=Math.max(1,...serie.map(x=>x.tot));
+    const barras=serie.map(x=>`<div class="barra"><span class="h">${dhm(x.t)}</span><div class="bar" style="height:12px"><i style="width:${x.tot/mx*100}%;background:var(--en)"></i></div><span class="mono"><b>${fint(x.tot)}</b></span><small>${esc(x.d.join(" · "))} — ${esc(x.f)}</small></div>`).join("");
+    const atual=energiaAgora();
+    const linhas=Object.entries(atual).sort((a,b)=>(b[1].ucs||0)-(a[1].ucs||0)||(b[1].pct||0)-(a[1].pct||0)).map(([m,x])=>{const pk=RALL.find(r=>r.mun===m&&r.c===5&&r.fonte==="CGREE · Energia");
+      return [munLink(m),x.ucs!=null?fint(x.ucs):"—",x.pct?f1(x.pct)+"%":"—",`${dhm(x.t)}${x.vel?' <span class="chip">vencida</span>':""}`,pk?esc(pk.tipo.replace("Falta de energia ","")):"—"]});
+    const se=scUltimas(tab("CGREE","Serviços essenciais"),r=>r["Município"]+"|"+r["Serviço"]);
+    abrirModal("Interrupção de energia elétrica",`<div class="lbl">Total do estado a cada extração</div><div class="barras">${barras||'<div class="empty">Sem extração.</div>'}</div>
+      <div class="lbl" style="margin-top:14px">Por município · situação mais recente</div>${tabela(["Município","UCs sem energia","% do município","Informação de","Pico no evento (C6)"],linhas,[1,2])}
+      ${se.length?`<div class="lbl" style="margin-top:14px">Serviços essenciais</div>${tabela(["Data/hora","Município","Serviço","Situação","Detalhe"],se.map(r=>[dhm(r._t),munLink(r["Município"]),esc(r["Serviço"]),`<span class="chip ${r["Situação"]==="Restabelecido"?"ok":"red"}">${esc(r["Situação"])}</span>`,esc(r["Detalhe"])]))}`:""}
+      <div class="note">Fontes: ANEEL – Painel RADAR, CGREE-SEDES e relatos municipais. "Vencida" = passou da validade de ${VALID["CGREE|Interrupções"]} min sem nova extração para o município.</div>`,
+      {nome:"energia",rows:[["Data/hora","Município","Distribuidora","UCs sem energia","% do município","Fonte"]].concat(en.map(r=>[scFmt(r._t),r["Município"],r["Distribuidora"],r["UCs sem energia"],r["% das UCs do município"],r["Fonte da informação"]]))});
+  },
+  vento(){
+    const pk={};tab("MET","Vento").forEach(r=>{const k=r["Estação"];if(!pk[k]||+r["Rajada máx (km/h)"]>+pk[k]["Rajada máx (km/h)"])pk[k]=r});
+    const vs=Object.values(pk).sort((a,b)=>b["Rajada máx (km/h)"]-a["Rajada máx (km/h)"]);
+    const cls=raj=>`<span class="rk ${raj>=76?"rk5":raj>=52?"rk4":raj>=18.6?"rk3":"rk1"}">${scClasseVento(raj)}</span>`;
+    const tv=tabela(["Município","Estação","Maior rajada (km/h)","Classe","Hora"],vs.map(r=>[munLink(r["Município"]),esc(r["Estação"])+(/relato/i.test(r["Estação"])?' <span class="chip">relato</span>':""),f1(r["Rajada máx (km/h)"]),cls(+r["Rajada máx (km/h)"]),dhm(r._t)]),[2]);
+    const ch={};tab("MET","Chuva").forEach(r=>{const k=r["Estação"],v=+r["Chuva 1h (mm)"]||0,v24=+r["Chuva 24h (mm)"]||0;const o=ch[k];if(!o||v>o.h1||(!o.h1&&v24>o.h24))ch[k]={r,h1:v,h24:v24}});
+    const cs=Object.values(ch).sort((a,b)=>b.h1-a.h1||b.h24-a.h24).slice(0,40);
+    const tc=tabela(["Município","Estação","Maior 1 h (mm)","24 h na hora do pico","Risco (Anexo 16)","Hora"],cs.map(({r,h1})=>{const m=munDe(r),k=scRisco16(m,{h1:r["Chuva 1h (mm)"],h24:r["Chuva 24h (mm)"],h96:r["Chuva 96h (mm)"],d30:r["Chuva 30 dias (mm)"]});
+      return [munLink(m),esc(r["Estação"])+(ehIlu(r)?' <span class="ilu">ilustr.</span>':/relato|Relato/.test(r["Estação"]+r["Observação"])?' <span class="chip">relato</span>':""),r["Chuva 1h (mm)"]!==""?f1(r["Chuva 1h (mm)"]):"—",f1(r["Chuva 24h (mm)"]),r["Chuva 1h (mm)"]===""?"—":`<span class="rk rk${k}">${SC_RISCO[k]}</span>`,dhm(r._t)]}),[2,3]);
+    abrirModal("Vento e chuva · maiores valores do evento",`<div class="lbl">Maior rajada por estação</div>${tv}<div class="note">Forte a partir de 52 km/h; muito forte a partir de 76 km/h.</div>
+      <div class="lbl" style="margin-top:14px">Maior chuva em 1 hora por estação (até 40)</div>${tc}<div class="note">Leituras reais: GEO-Rio (cidade do Rio) e relatos municipais. As demais estações são ilustrativas até chegar a lista do CEMADEN-RJ.</div>`,
+      {nome:"vento_chuva",rows:[["Tipo","Município","Estação","Valor","Hora"]].concat(vs.map(r=>["Rajada (km/h)",r["Município"],r["Estação"],r["Rajada máx (km/h)"],scFmt(r._t)]),cs.map(({r})=>["Chuva 1h (mm)",munDe(r),r["Estação"],r["Chuva 1h (mm)"],scFmt(r._t)]))});
+  }
+};
+$("kpis").addEventListener("click",e=>{const k=e.target.closest(".kpi");if(k&&KPI_DET[k.dataset.k])KPI_DET[k.dataset.k]()});
+$("kpis").addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.dataset.k){e.preventDefault();KPI_DET[e.target.dataset.k]()}});
 
 /* ---------------- render ---------------- */
 function render(){
